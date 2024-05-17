@@ -1,0 +1,16 @@
+<.header>
+  Alert <%= @alert.id %>
+  <:subtitle>This is a alert record from your database.</:subtitle>
+  <:actions>
+    <.link href={~p"/alerts/#{@alert}/edit"}>
+      <.button>Edit alert</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Message"><%= @alert.message %></:item>
+  <:item title="Status"><%= @alert.status %></:item>
+</.list>
+
+<.back navigate={~p"/alerts"}>Back to alerts</.back>

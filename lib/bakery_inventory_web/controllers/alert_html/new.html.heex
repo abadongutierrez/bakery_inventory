@@ -1,0 +1,8 @@
+<.header>
+  New Alert
+  <:subtitle>Use this form to manage alert records in your database.</:subtitle>
+</.header>
+
+<.alert_form changeset={@changeset} action={~p"/alerts"} />
+
+<.back navigate={~p"/alerts"}>Back to alerts</.back>

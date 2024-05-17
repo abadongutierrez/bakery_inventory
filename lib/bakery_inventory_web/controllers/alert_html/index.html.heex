@@ -1,0 +1,21 @@
+<.header>
+  Listing Alerts
+  <:actions>
+    <.link href={~p"/alerts/new"}>
+      <.button>New Alert</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table id="alerts" rows={@alerts} row_click={&JS.navigate(~p"/alerts/#{&1}")}>
+  <:col :let={alert} label="Message"><%= alert.message %></:col>
+  <:col :let={alert} label="Status"><%= alert.status %></:col>
+  <:col :let={alert} label="Item"><.link navigate={~p"/items/#{alert.item.id}"}><%= alert.item.name %></.link></:col>
+  <:action :let={alert}>
+    <%= if alert.status != "acknowledged" do %>
+      <.link href={~p"/alerts/#{alert}/acknowledge"} method="put">
+        Acknowledge 
+      </.link>
+    <% end %>
+  </:action>
+</.table>

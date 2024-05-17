@@ -1,0 +1,47 @@
+<div>
+<.form action={~p"/items/search"} method="get">
+  <input type="text" name="query" placeholder="Search items...">
+  <input type="submit" value="Search">
+</.form>
+</div>
+
+<.header>
+  Listing Items
+  <:actions>
+    <.link href={~p"/items/new"}>
+      <.button>New Item</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<%= if Enum.empty?(@items) do %>
+  <p>No items found.</p>
+  <.back navigate={~p"/items"}>Back to all items</.back>
+<% else %>
+  <.table id="items" rows={@items} row_click={&JS.navigate(~p"/items/#{&1}")}>
+    <:col :let={item} label="Name"><%= item.name %></:col>
+    <:col :let={item} label="Description"><%= item.description %></:col>
+    <:col :let={item} label="Quantity"><%= item.quantity %></:col>
+    <:col :let={item} label="Price"><%= format_price(item.price) %></:col>
+    <:action :let={item}>
+      <div class="sr-only">
+        <.link navigate={~p"/items/#{item}"}>Show</.link>
+      </div>
+      <.link navigate={~p"/items/#{item}/edit"}>Edit</.link>
+    </:action>
+    <:action :let={item}>
+      <.link href={~p"/items/#{item}"} method="delete" data-confirm="Are you sure?">
+        Delete
+      </.link>
+    </:action>
+  </.table>
+  <p>Showing <%= length(@items) %> out of <%= @total_count %> items.</p>
+  <p>There are 
+    <.link navigate={~p"/alerts"}>
+      <%= @pending_alerts %> pending alerts
+    </.link>
+  </p>
+  <%= if length(@items) < @total_count do %> 
+    <.back navigate={~p"/items"}>Back to all items</.back>
+  <% end %>
+<% end %>
