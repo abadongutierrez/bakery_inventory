@@ -20,7 +20,7 @@ defmodule BakeryInventoryWeb.Router do
     get "/", PageController, :home
     get "/items/search", ItemController, :search
     resources "/items", ItemController
-    resources "/alerts", AlertController
+    resources "/alerts", AlertController, excpet: [:delete, :create, :update, :edit, :show]
     put "/alerts/:id/acknowledge", AlertController, :acknowledge
   end
 

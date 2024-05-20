@@ -42,20 +42,15 @@ defmodule BakeryInventoryWeb.ItemController do
   def update(conn, %{"id" => id, "item" => item_params}) do
     item = Inventory.get_item!(id)
 
-    with {:ok, item} <- Inventory.update_item(item, item_params),
-         alert_result <- Inventory.check_and_create_alert(item),
-         msg <- alert_message(alert_result) do
-      conn
-      |> put_flash(:info, "Item updated successfully." <> msg)
-      |> redirect(to: ~p"/items/#{item}")
-    else
-      {:error, %Ecto.Changeset{} = changeset} ->
+    case Inventory.update_item_and_check_alert(item, item_params) do
+      {:ok, item, msg} ->
+        conn
+        |> put_flash(:info, "Item updated successfully. " <> msg <> ".")
+        |> redirect(to: ~p"/items/#{item}")
+      {:error, changeset} ->
         render(conn, :edit, item: item, changeset: changeset)
     end
   end
-
-  defp alert_message({:ok, _}), do: " There are alerts."
-  defp alert_message(_), do: ""
 
   def delete(conn, %{"id" => id}) do
     item = Inventory.get_item!(id)

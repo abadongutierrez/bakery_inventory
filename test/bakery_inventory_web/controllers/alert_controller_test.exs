@@ -22,8 +22,13 @@ defmodule BakeryInventoryWeb.AlertControllerTest do
   end
 
   describe "create alert" do
-    test "redirects to show when data is valid", %{conn: conn} do
-      conn = post(conn, ~p"/alerts", alert: @create_attrs)
+    setup %{conn: conn} do
+      item = BakeryInventory.InventoryFixtures.item_fixture()
+      {:ok, conn: conn, item: item}
+    end
+
+    test "redirects to show when data is valid", %{conn: conn, item: item} do
+      conn = post(conn, ~p"/alerts", alert: Map.put(@create_attrs, :item_id, item.id))
 
       assert %{id: id} = redirected_params(conn)
       assert redirected_to(conn) == ~p"/alerts/#{id}"
@@ -80,5 +85,15 @@ defmodule BakeryInventoryWeb.AlertControllerTest do
   defp create_alert(_) do
     alert = alert_fixture()
     %{alert: alert}
+  end
+
+  describe "acknowledge alert" do
+    setup [:create_alert]
+    test "updates alert status to acknowledged", %{conn: conn, alert: alert} do
+      conn = put(conn, ~p"/alerts/#{alert}/acknowledge")
+      assert redirected_to(conn) == ~p"/alerts"
+      conn = get(conn, ~p"/alerts/#{alert}")
+      assert html_response(conn, 200) =~ "acknowledged"
+    end
   end
 end

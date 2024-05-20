@@ -77,6 +77,20 @@ defmodule BakeryInventory.Inventory do
     |> Repo.update()
   end
 
+  def update_item_and_check_alert(%Item{} = item, attrs) do
+    with {:ok, updated_item} <- update_item(item, attrs),
+         alert_result <- check_and_create_alert(updated_item),
+         msg <- alert_message(alert_result) do
+      {:ok, updated_item, msg}
+    else
+      {:error, %Ecto.Changeset{} = changeset} ->
+        {:error, changeset}
+    end
+  end
+
+  defp alert_message({:ok, _}), do: "There are alerts"
+  defp alert_message(_), do: ""
+
   @doc """
   Deletes a item.
 
@@ -124,7 +138,10 @@ defmodule BakeryInventory.Inventory do
 
   """
   def list_alerts do
-    Repo.all(Alert) |> Repo.preload(:item)
+    Alert
+    |> Ecto.Query.order_by(desc: :status, desc: :inserted_at)
+    |> Repo.all()
+    |> Repo.preload(:item)
   end
 
   @doc """
@@ -141,7 +158,11 @@ defmodule BakeryInventory.Inventory do
       ** (Ecto.NoResultsError)
 
   """
-  def get_alert!(id), do: Repo.get!(Alert, id)
+  def get_alert!(id) do
+    Alert
+    |> Repo.get!(id)
+    |> Repo.preload(:item)
+  end
 
   @doc """
   Creates a alert.
@@ -209,15 +230,34 @@ defmodule BakeryInventory.Inventory do
   end
 
   def check_and_create_alert(item) do
-    if item.quantity == 0 do
-      %Alert{}
-      |> Alert.changeset(%{message: "Item quantity is 0", status: "pending", item_id: item.id})
-      |> Repo.insert()
+    cond do
+      item.quantity == 0 ->
+        create_alert("Item inventory is depleted", "pending", item.id)
+
+      item.quantity <= 5 ->
+        create_alert("Item inventory is low", "pending", item.id)
+
+      true ->
+        :ok
     end
+  end
+
+  defp create_alert(message, status, item_id) do
+    %Alert{}
+    |> Alert.changeset(%{message: message, status: status, item_id: item_id})
+    |> Repo.insert()
   end
 
   def count_pending_alerts() do
     from(a in Alert, where: a.status == "pending")
     |> Repo.aggregate(:count, :id)
+  end
+
+  def get_alert_for_item(%Item{} = item) do
+    Alert
+    |> where([a], a.item_id == ^item.id)
+    |> order_by(desc: :inserted_at)
+    |> limit(1)
+    |> Repo.one()
   end
 end

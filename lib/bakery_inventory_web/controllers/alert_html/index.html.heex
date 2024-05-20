@@ -1,10 +1,5 @@
 <.header>
   Listing Alerts
-  <:actions>
-    <.link href={~p"/alerts/new"}>
-      <.button>New Alert</.button>
-    </.link>
-  </:actions>
 </.header>
 
 <.table id="alerts" rows={@alerts} row_click={&JS.navigate(~p"/alerts/#{&1}")}>

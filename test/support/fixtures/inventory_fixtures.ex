@@ -4,6 +4,8 @@ defmodule BakeryInventory.InventoryFixtures do
   entities via the `BakeryInventory.Inventory` context.
   """
 
+  alias BakeryInventory.Repo
+
   @doc """
   Generate a item.
   """
@@ -25,14 +27,16 @@ defmodule BakeryInventory.InventoryFixtures do
   Generate a alert.
   """
   def alert_fixture(attrs \\ %{}) do
+    # Ensure an item is created before creating an alert
+    item = item_fixture()
+
+    attrs = Map.put(attrs, :item_id, item.id)
+
     {:ok, alert} =
       attrs
-      |> Enum.into(%{
-        message: "some message",
-        status: "some status"
-      })
+      |> Enum.into(%{message: "some message", status: "some status", item_id: item.id})
       |> BakeryInventory.Inventory.create_alert()
 
-    alert
+    Repo.preload(alert, :item)
   end
 end

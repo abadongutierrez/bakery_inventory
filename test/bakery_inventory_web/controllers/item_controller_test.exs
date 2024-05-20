@@ -81,4 +81,26 @@ defmodule BakeryInventoryWeb.ItemControllerTest do
     item = item_fixture()
     %{item: item}
   end
+
+  describe "search item" do
+    setup [:create_item]
+
+    test "returns matching items with name", %{conn: conn, item: item} do
+      conn = get(conn, "/items/search", %{query: "some name"})
+      assert html_response(conn, 200) =~ "Listing Items"
+      assert html_response(conn, 200) =~ item.name
+    end
+
+    test "returns matching items with description", %{conn: conn, item: item} do
+      conn = get(conn, "/items/search", %{query: "some description"})
+      assert html_response(conn, 200) =~ "Listing Items"
+      assert html_response(conn, 200) =~ item.description
+    end
+
+    test "returns no results for non-existing item", %{conn: conn} do
+      conn = get(conn, "/items/search", %{query: "non-existing item"})
+      assert html_response(conn, 200) =~ "Listing Items"
+      assert html_response(conn, 200) =~ "No items found"
+    end
+  end
 end
